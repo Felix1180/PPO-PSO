@@ -35,6 +35,10 @@ def update_position(particle):
     for i in range(len(particle.position)):
         particle.position[i] += particle.velocity[i]
 
+def generate_random_positions(dimensi, jumlah_posisi):
+    # Fungsi untuk menghasilkan bilangan acak dalam rentang [-5, 5]
+    return [[random.uniform(-5, 5) for _ in range(dimensi)] for _ in range(jumlah_posisi)]
+
 def pso(dimensi, jumlah_partikel, jumlah_iterasi, initial_particles=None):
     # Algoritma Particle Swarm Optimization (PSO).
 
@@ -92,7 +96,7 @@ if __name__ == "__main__":
     r1 = random.uniform(0,1)
     r2 = random.uniform(0,1)
 
-    initial_positions = [[0.0], [0.5], [1.0]]  # Inisialisasi posisi partikel
+    initial_positions = generate_random_positions(dimensi, 10)  # Generate 10 bilangan acak
     particles = [Particle(dimensi, initial_position) for initial_position in initial_positions]
     # Membuat list particles berisi objek-objek Particle yang dihasilkan dari inisialisasi dengan posisi awal yang ada dalam initial_positions
 
