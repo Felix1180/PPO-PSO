@@ -20,7 +20,6 @@ def update_velocity(particle, gbest, w=1, c1=0.5, c2=1):
     # Fungsi untuk mengupdate kecepatan partikel.
 
     for i in range(len(particle.velocity)):
-        r1, r2 = 0.5, 0.5
         cognitive = c1 * r1 * (particle.pbest[i] - particle.position[i])  # Kecenderungan bergerak mengikuti pbest
         social = c2 * r2 * (gbest[i] - particle.position[i])  # Kecenderungan bergerak mengikuti Gbest
         # Simpan nilai v sebelum diperbarui
@@ -89,6 +88,7 @@ if __name__ == "__main__":
     dimensi = 1  # Inisialiasi dimensi partikel
     jumlah_partikel = 3  # Banyaknya partikel
     jumlah_iterasi = 3  # Jumlah Iterasi
+    r1, r2 = 0.5, 0.5
 
     initial_positions = [[0.0], [0.5], [1.0]]  # Inisialisasi posisi partikel
     particles = [Particle(dimensi, initial_position) for initial_position in initial_positions]
