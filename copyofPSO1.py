@@ -1,4 +1,5 @@
 import math
+import random
 
 def objective_function(position):
     # Menghitung nilai fungsi objektif untuk suatu posisi.
@@ -88,7 +89,8 @@ if __name__ == "__main__":
     dimensi = 1  # Inisialiasi dimensi partikel
     jumlah_partikel = 3  # Banyaknya partikel
     jumlah_iterasi = 3  # Jumlah Iterasi
-    r1, r2 = 0.5, 0.5
+    r1 = random.uniform(0,1)
+    r2 = random.uniform(0,1)
 
     initial_positions = [[0.0], [0.5], [1.0]]  # Inisialisasi posisi partikel
     particles = [Particle(dimensi, initial_position) for initial_position in initial_positions]
