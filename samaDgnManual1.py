@@ -69,8 +69,10 @@ def pso(dimensi, jumlah_partikel, jumlah_iterasi, initial_particles=None):
             maka si gbest nya diubah menjadi posisi partikel itu"""
             if current_fitness < objective_function(gbest):
                 gbest = particle.position[:]
+
         print(f"pbest={[particle.pbest for particle in particles]}")
         print(f"gbest={gbest}")
+
         for particle in particles:  # Tiap partikel diupdate kecepatan dan posisinya pada tiap iterasi
             update_velocity(particle, gbest)
             update_position(particle)
