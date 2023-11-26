@@ -1,6 +1,5 @@
 import math
 import random
-
 from matplotlib import pyplot as plt
 from prettytable import PrettyTable
 
@@ -15,12 +14,12 @@ class Particle:
         self.pbest = self.position[:]
         self.pbest_value = objective_function(self.position)
 
-def update_velocity(particle, gbest, w=0.9, c1=0.5, c2=1):
+def update_velocity(particle, gbest, w, c1=2, c2=2):
     # Fungsi untuk mengupdate kecepatan partikel.
 
     for i in range(len(particle.velocity)):
-        cognitive = c1 * r1 * (particle.pbest[i] - particle.position[i])  # Kecenderungan bergerak mengikuti pbest
-        social = c2 * r2 * (gbest[i] - particle.position[i])  # Kecenderungan bergerak mengikuti Gbest
+        cognitive = c1 * random.uniform(0, 1) * (particle.pbest[i] - particle.position[i])  # Kecenderungan bergerak mengikuti pbest
+        social = c2 * random.uniform(0, 1) * (gbest[i] - particle.position[i])  # Kecenderungan bergerak mengikuti Gbest
         # Simpan nilai v sebelum diperbarui
         old_velocity = particle.velocity[i]
         new_velocity = w * old_velocity + cognitive + social  # Update Kecepatan
@@ -54,14 +53,14 @@ def pso(dimensi, jumlah_partikel, jumlah_iterasi, initial_particles=None):
 
     iteration_list = []
     position_list = []
-    fx_list = []
 
-    for iteration in range(0, jumlah_iterasi):  # Melakukan iterasi
+    for iteration in range(jumlah_iterasi):  # Melakukan iterasi
         iteration_list.append(iteration + 1)
         current_positions = [(particle.position[0], particle.position[1]) for particle in particles]
         position_list.append(current_positions)
         fx_values = [objective_function(particle.position) for particle in particles]
-        fx_list.append(fx_values)
+
+        w = 0.9 - (iteration / jumlah_iterasi) * 0.4  # Menurunkan inertia weight tiap iterasi
 
         for particle in particles:  # Tiap partikel juga akan di cek nilainya terkait fungsi objektif
             current_fitness = objective_function(particle.position)
@@ -80,7 +79,7 @@ def pso(dimensi, jumlah_partikel, jumlah_iterasi, initial_particles=None):
                 gbest = particle.position[:]
 
         for particle in particles:
-            update_velocity(particle, gbest)
+            update_velocity(particle, gbest, w)
 
         rounded_gbest = [round(value, 4) for value in gbest]
 
@@ -133,8 +132,6 @@ if __name__ == "__main__":
     dimensi = 2
     jumlah_partikel = 3
     jumlah_iterasi = 50
-    r1 = random.uniform(0,1)
-    r2 = random.uniform(0, 1)
 
     initial_positions = generate_random_positions(dimensi, 3)  # Generate 3 posisi acak dalam dimensi 2
     particles = [Particle(dimensi, initial_position) for initial_position in initial_positions]

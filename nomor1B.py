@@ -14,10 +14,10 @@ class Particle:
         self.pbest = self.position[:]
         self.pbest_value = objective_function(self.position)
 
-def update_velocity(particle, gbest, w=0.9, c1=0.5, c2=1):
+def update_velocity(particle, gbest, w, c1=2, c2=2):
     for i in range(len(particle.velocity)):
-        cognitive = c1 * r1 * (particle.pbest[i] - particle.position[i])
-        social = c2 * r2 * (gbest[i] - particle.position[i])
+        cognitive = c1 * random.uniform(0, 1) * (particle.pbest[i] - particle.position[i])
+        social = c2 * random.uniform(0, 1) * (gbest[i] - particle.position[i])
         old_velocity = particle.velocity[i]
         new_velocity = w * old_velocity + cognitive + social
         particle.velocity[i] = new_velocity
@@ -40,14 +40,14 @@ def pso(dimensi, jumlah_partikel, jumlah_iterasi, initial_particles=None):
     # Lists to store data for visualization
     iteration_list = []
     position_list = []
-    fx_list = []
 
     for iteration in range(jumlah_iterasi):
         iteration_list.append(iteration + 1)
         current_positions = [particle.position[0] for particle in particles]
         position_list.append(current_positions)
         fx_values = [objective_function(particle.position) for particle in particles]
-        fx_list.append(fx_values)
+
+        w = 0.9 - (iteration / jumlah_iterasi) * 0.4  # Menurunkan inertia weight tiap iterasi
 
         for particle in particles:
             current_fitness = objective_function(particle.position)
@@ -60,7 +60,9 @@ def pso(dimensi, jumlah_partikel, jumlah_iterasi, initial_particles=None):
                 gbest = particle.position[:]
 
         for particle in particles:
-            update_velocity(particle, gbest)
+            update_velocity(particle, gbest, w)
+
+        rounded_gbest = [round(value, 4) for value in gbest]
 
         row = [iteration + 1,
                [round(pos, 4) for pos in current_positions],
@@ -101,13 +103,12 @@ def pso(dimensi, jumlah_partikel, jumlah_iterasi, initial_particles=None):
     plt.suptitle('Objective Function and Particle Positions')
     plt.show()
 
-    return gbest, round(objective_function(gbest), 4)
+    return rounded_gbest, objective_function(gbest)
 
 if __name__ == "__main__":
     dimensi = 1
     jumlah_partikel = 3
-    jumlah_iterasi = 50
-    r1, r2 = random.uniform(0, 1), random.uniform(0, 1)
+    jumlah_iterasi = 100
 
     initial_positions = generate_random_positions(dimensi, 3)
     particles = [Particle(dimensi, initial_position) for initial_position in initial_positions]
