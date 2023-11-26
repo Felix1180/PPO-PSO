@@ -1,6 +1,7 @@
 import math
 import random
 
+from matplotlib import pyplot as plt
 from prettytable import PrettyTable
 
 def objective_function(position):
@@ -39,21 +40,28 @@ def generate_random_positions(dimensi, jumlah_posisi):
 
 def pso(dimensi, jumlah_partikel, jumlah_iterasi, initial_particles=None):
     # Algoritma Particle Swarm Optimization (PSO).
-
     particles = initial_particles or [Particle(dimensi, [0.0] * dimensi) for _ in range(jumlah_partikel)]
     """Jika initial particle tidak diinisialisasi
     (None) maka menjalankan list comprehension 
     (membuat particles dengan nilai [0.0])"""
-
     gbest = min(particles, key=lambda p: p.pbest_value).pbest[:]
     """gbest diambil dari nilai terkecil menggunakan fungsi (min) 
     dari atribut pbest_value terkecil dari tiap-tiap partikel
     lalu salin pbest[:]-nya tersebut menjadi nilai gbest"""
 
     table = PrettyTable()
-    table.field_names = ["Iterasi", "Posisi (x,y)", "f(x,y)", "gBest", "pBest", "v"]
+    table.field_names = ["Iterasi", "Posisi (x,y)", "f(x,y)", "pBest", "gBest", "v"]
+
+    iteration_list = []
+    position_list = []
+    fx_list = []
 
     for iteration in range(0, jumlah_iterasi):  # Melakukan iterasi
+        iteration_list.append(iteration + 1)
+        current_positions = [(particle.position[0], particle.position[1]) for particle in particles]
+        position_list.append(current_positions)
+        fx_values = [objective_function(particle.position) for particle in particles]
+        fx_list.append(fx_values)
 
         for particle in particles:  # Tiap partikel juga akan di cek nilainya terkait fungsi objektif
             current_fitness = objective_function(particle.position)
@@ -77,11 +85,12 @@ def pso(dimensi, jumlah_partikel, jumlah_iterasi, initial_particles=None):
         rounded_gbest = [round(value, 4) for value in gbest]
 
         row = [iteration + 1,
-               [(round(pos[0], 3), round(pos[1], 3)) for pos in [particle.position for particle in particles]],
-               [round(objective_function(particle.position), 4) for particle in particles],
+               [(round(pos[0], 4), round(pos[1], 4)) for pos in current_positions],
+               [round(fx, 4) for fx in fx_values],
+               [(round(pbest[0], 4), round(pbest[1], 4)) for pbest in [particle.pbest for particle in particles]],
                (round(gbest[0], 3), round(gbest[1], 3)),
-               [(round(pbest[0], 3), round(pbest[1], 3)) for pbest in [particle.pbest for particle in particles]],
-               [round(velocity, 3) for velocity in [particle.velocity[0] for particle in particles]]
+               [(round(velocity[0], 5), round(velocity[1], 5)) for velocity in
+                [particle.velocity for particle in particles]]
                ]
 
         table.add_row(row)
@@ -93,12 +102,37 @@ def pso(dimensi, jumlah_partikel, jumlah_iterasi, initial_particles=None):
     gbest(posisi) dan juga nilainya jika dimasukkan kedalam 
     objective function"""
     print(table)
+
+    # Plot objective function
+    fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(15, 6))
+
+    x_values = [i / 100 for i in range(-1000, 1001)]
+    y_values = [objective_function([x, gbest[1]]) for x in x_values]
+    ax1.plot(x_values, y_values, label='f(x, y)', color='blue')
+    ax1.set_xlabel('x')
+    ax1.set_ylabel('f(x, y)', color='blue')
+    ax1.tick_params(axis='y', labelcolor='blue')
+    ax1.legend(loc='upper left')
+
+    # Plot particle positions
+    for i in range(jumlah_partikel):
+        ax2.plot(iteration_list, [positions[i][0] for positions in position_list], label=f'Particle {i + 1} (x)',
+                 marker='o')
+        ax2.plot(iteration_list, [positions[i][1] for positions in position_list], label=f'Particle {i + 1} (y)',
+                 marker='x')
+
+    ax2.set_xlabel('Iteration')
+    ax2.set_ylabel('Particle Position')
+    ax2.legend(loc='upper right')
+
+    plt.suptitle('Objective Function and Particle Positions')
+    plt.show()
     return rounded_gbest, round(objective_function(gbest), 4)
 
 if __name__ == "__main__":
     dimensi = 2
     jumlah_partikel = 3
-    jumlah_iterasi = 100
+    jumlah_iterasi = 50
     r1 = random.uniform(0,1)
     r2 = random.uniform(0, 1)
 

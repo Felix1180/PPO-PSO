@@ -1,4 +1,6 @@
 import math
+import random
+import matplotlib.pyplot as plt
 from prettytable import PrettyTable
 
 def objective_function(position):
@@ -32,7 +34,18 @@ def pso(dimensi, jumlah_partikel, jumlah_iterasi, initial_particles=None):
     table = PrettyTable()
     table.field_names = ["Iterasi", "Posisi (x)", "f(x)", "pBest", "gBest", "v"]
 
+    # Lists to store data for visualization
+    iteration_list = []
+    position_list = []
+    fx_list = []
+
     for iteration in range(jumlah_iterasi):
+        iteration_list.append(iteration + 1)
+        current_positions = [particle.position[0] for particle in particles]
+        position_list.append(current_positions)
+        fx_values = [objective_function(particle.position) for particle in particles]
+        fx_list.append(fx_values)
+
         for particle in particles:
             current_fitness = objective_function(particle.position)
 
@@ -46,11 +59,9 @@ def pso(dimensi, jumlah_partikel, jumlah_iterasi, initial_particles=None):
         for particle in particles:
             update_velocity(particle, gbest)
 
-        rounded_gbest = [round(value, 4) for value in gbest]
-
         row = [iteration + 1,
-               [round(pos, 4) for pos in [particle.position[0] for particle in particles]],
-               [round(objective_function(particle.position), 4) for particle in particles],
+               [round(pos, 4) for pos in current_positions],
+               [round(fx, 4) for fx in fx_values],
                [round(pbest, 4) for pbest in [particle.pbest[0] for particle in particles]],
                [round(value, 4) for value in gbest],
                [round(velocity, 5) for velocity in [particle.velocity[0] for particle in particles]]
@@ -61,8 +72,33 @@ def pso(dimensi, jumlah_partikel, jumlah_iterasi, initial_particles=None):
         for particle in particles:
             update_position(particle)
 
+    # Print the table
     print(table)
-    return rounded_gbest, round(objective_function(gbest),4)
+
+    # Plot objective function and particle positions in the same figure
+    fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(15, 6))
+
+    # Plot objective function on the left subplot (ax1)
+    x_values = [i / 100 for i in range(-520, 521)]
+    y_values = [objective_function([x]) for x in x_values]
+    ax1.plot(x_values, y_values, label='f(x)', color='blue')
+    ax1.set_xlabel('x')
+    ax1.set_ylabel('f(x)', color='blue')
+    ax1.tick_params(axis='y', labelcolor='blue')
+    ax1.legend(loc='upper left')
+
+    # Plot particle positions on the right subplot (ax2)
+    for i in range(jumlah_partikel):
+        ax2.plot(iteration_list, [positions[i] for positions in position_list], label=f'Particle {i + 1}', marker='o')
+
+    ax2.set_xlabel('Iteration')
+    ax2.set_ylabel('Particle Position (x)')
+    ax2.legend(loc='upper right')
+
+    plt.suptitle('Objective Function and Particle Positions')
+    plt.show()
+
+    return gbest, round(objective_function(gbest), 4)
 
 if __name__ == "__main__":
     dimensi = 1
@@ -70,7 +106,7 @@ if __name__ == "__main__":
     jumlah_iterasi = 3
     r1, r2 = 0.5, 0.5
 
-    initial_positions = [[0.0], [0.5], [1.0]]
+    initial_positions = [[0.0],[0.5],[1.0]]
     particles = [Particle(dimensi, initial_position) for initial_position in initial_positions]
 
     hasil, nilai_optimum = pso(dimensi, jumlah_partikel, jumlah_iterasi, initial_particles=particles)
