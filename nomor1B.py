@@ -62,8 +62,6 @@ def pso(dimensi, jumlah_partikel, jumlah_iterasi, initial_particles=None):
         for particle in particles:
             update_velocity(particle, gbest, w)
 
-        rounded_gbest = [round(value, 4) for value in gbest]
-
         row = [iteration + 1,
                [round(pos, 4) for pos in current_positions],
                [round(fx, 4) for fx in fx_values],
@@ -103,12 +101,12 @@ def pso(dimensi, jumlah_partikel, jumlah_iterasi, initial_particles=None):
     plt.suptitle('Objective Function and Particle Positions')
     plt.show()
 
-    return rounded_gbest, objective_function(gbest)
+    return gbest, objective_function(gbest)
 
 if __name__ == "__main__":
     dimensi = 1
     jumlah_partikel = 3
-    jumlah_iterasi = 100
+    jumlah_iterasi = 300
 
     initial_positions = generate_random_positions(dimensi, 3)
     particles = [Particle(dimensi, initial_position) for initial_position in initial_positions]

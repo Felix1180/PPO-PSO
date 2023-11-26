@@ -131,7 +131,7 @@ def pso(dimensi, jumlah_partikel, jumlah_iterasi, initial_particles=None):
 if __name__ == "__main__":
     dimensi = 2
     jumlah_partikel = 3
-    jumlah_iterasi = 50
+    jumlah_iterasi = 100
 
     initial_positions = generate_random_positions(dimensi, 3)  # Generate 3 posisi acak dalam dimensi 2
     particles = [Particle(dimensi, initial_position) for initial_position in initial_positions]

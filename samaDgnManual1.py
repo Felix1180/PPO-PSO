@@ -37,14 +37,12 @@ def pso(dimensi, jumlah_partikel, jumlah_iterasi, initial_particles=None):
     # Lists to store data for visualization
     iteration_list = []
     position_list = []
-    fx_list = []
 
     for iteration in range(jumlah_iterasi):
         iteration_list.append(iteration + 1)
         current_positions = [particle.position[0] for particle in particles]
         position_list.append(current_positions)
         fx_values = [objective_function(particle.position) for particle in particles]
-        fx_list.append(fx_values)
 
         for particle in particles:
             current_fitness = objective_function(particle.position)
