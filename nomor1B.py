@@ -1,9 +1,10 @@
 import math
+import random
 from prettytable import PrettyTable
 
 def objective_function(position):
     x = position[0]
-    return x ** 2 - 10 * math.sin(2 * math.pi * x)
+    return x**2 - 10 * math.sin(2*math.pi*x)
 
 class Particle:
     def __init__(self, dimensi, initial_position):
@@ -12,7 +13,7 @@ class Particle:
         self.pbest = self.position[:]
         self.pbest_value = objective_function(self.position)
 
-def update_velocity(particle, gbest, w=1.0, c1=0.5, c2=1):
+def update_velocity(particle, gbest, w=1, c1=0.5, c2=1):
     for i in range(len(particle.velocity)):
         cognitive = c1 * r1 * (particle.pbest[i] - particle.position[i])
         social = c2 * r2 * (gbest[i] - particle.position[i])
@@ -24,6 +25,9 @@ def update_position(particle):
     for i in range(len(particle.position)):
         new_position = particle.position[i] + particle.velocity[i]
         particle.position[i] = max(-5.2, min(5.2, new_position))
+
+def generate_random_positions(dimensi, jumlah_posisi):
+    return [[random.uniform(-5.2, 5.2) for _ in range(dimensi)] for _ in range(jumlah_posisi)]
 
 def pso(dimensi, jumlah_partikel, jumlah_iterasi, initial_particles=None):
     particles = initial_particles or [Particle(dimensi, [0.0] * dimensi) for _ in range(jumlah_partikel)]
@@ -67,10 +71,11 @@ def pso(dimensi, jumlah_partikel, jumlah_iterasi, initial_particles=None):
 if __name__ == "__main__":
     dimensi = 1
     jumlah_partikel = 3
-    jumlah_iterasi = 3
-    r1, r2 = 0.5, 0.5
+    jumlah_iterasi = 5
+    r1 = random.uniform(0, 1)
+    r2 = random.uniform(0, 1)
 
-    initial_positions = [[0.0], [0.5], [1.0]]
+    initial_positions = generate_random_positions(dimensi, 3)
     particles = [Particle(dimensi, initial_position) for initial_position in initial_positions]
 
     hasil, nilai_optimum = pso(dimensi, jumlah_partikel, jumlah_iterasi, initial_particles=particles)

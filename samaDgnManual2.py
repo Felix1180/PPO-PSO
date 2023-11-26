@@ -1,4 +1,5 @@
 import math
+from prettytable import  PrettyTable
 
 def objective_function(position):
     x,y = position
@@ -27,7 +28,9 @@ def update_position(particle):
     # Fungsi untuk mengupdate posisi partikel.
 
     for i in range(len(particle.position)):
-        particle.position[i] += particle.velocity[i]
+        new_position = particle.position[i] + particle.velocity[i]
+        # Pastikan nilai posisi berada dalam rentang [-10, 10]
+        particle.position[i] = max(-10, min(10, new_position))
 
 def pso(dimensi, jumlah_partikel, jumlah_iterasi, initial_particles=None):
     # Algoritma Particle Swarm Optimization (PSO).
@@ -42,11 +45,12 @@ def pso(dimensi, jumlah_partikel, jumlah_iterasi, initial_particles=None):
     dari atribut pbest_value terkecil dari tiap-tiap partikel
     lalu salin pbest[:]-nya tersebut menjadi nilai gbest"""
 
+    table = PrettyTable()
+    table.field_names = ["Iterasi", "Posisi (x,y)", "f(x,y)", "gBest", "pBest", "v"]
+
     for iteration in range(0, jumlah_iterasi):  # Melakukan iterasi
 
         # Pencetakan nilai pada setiap iterasi
-        print(f"Iterasi {iteration+1}:\nx={[particle.position for particle in particles]}\n"
-              f"f(x)={[objective_function(particle.position) for particle in particles]}")
 
         for particle in particles:  # Tiap partikel juga akan di cek nilainya terkait fungsi objektif
             current_fitness = objective_function(particle.position)
@@ -63,18 +67,31 @@ def pso(dimensi, jumlah_partikel, jumlah_iterasi, initial_particles=None):
             maka si gbest nya diubah menjadi posisi partikel itu"""
             if current_fitness < objective_function(gbest):
                 gbest = particle.position[:]
-        print(f"pbest={[particle.pbest for particle in particles]}")
-        print(f"gbest={gbest}")
-        for particle in particles:  # Tiap partikel diupdate kecepatan dan posisinya pada tiap iterasi
+
+        for particle in particles:
             update_velocity(particle, gbest)
+
+        rounded_gbest = [round(value, 4) for value in gbest]
+
+        row = [iteration + 1,
+               [(round(pos[0], 3), round(pos[1], 3)) for pos in [particle.position for particle in particles]],
+               [round(objective_function(particle.position), 4) for particle in particles],
+               (round(gbest[0], 3), round(gbest[1], 3)),
+               [(round(pbest[0], 3), round(pbest[1], 3)) for pbest in [particle.pbest for particle in particles]],
+               [(round(velocity[0], 5), round(velocity[1], 5)) for velocity in [particle.velocity for particle in particles]]
+               ]
+
+        table.add_row(row)
+
+        for particle in particles:  # Tiap partikel diupdate posisinya pada tiap iterasi
             update_position(particle)
 
-        print(f"v = {[particle.velocity for particle in particles]}\n")
 
     """Jadi akhir dari fungsi ini akan memberikan kita
     gbest(posisi) dan juga nilainya jika dimasukkan kedalam 
     objective function"""
-    return gbest, objective_function(gbest)
+    print(table)
+    return rounded_gbest, round(objective_function(gbest), 4)
 
 if __name__ == "__main__":
     dimensi = 2

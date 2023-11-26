@@ -1,22 +1,20 @@
 import math
 import random
 
-def objective_function(position):
-    # Menghitung nilai fungsi objektif untuk suatu posisi.
+from prettytable import PrettyTable
 
-    x = position[0]
-    return x**2 - 10 * math.sin(2*math.pi*x)
+def objective_function(position):
+    x,y = position
+    return math.sin(3 * math.pi * x)**2 + (x - 1)**2 * (1 + math.sin(3 * math.pi * y)**2) + (y - 1)**2 * (1 + math.sin(2 * math.pi * y)**2)
 
 class Particle:
     def __init__(self, dimensi, initial_position):
-        # Konstruktor kelas Particle untuk inisialisasi partikel.
+        self.position = initial_position[:]
+        self.velocity = [0.0] * dimensi
+        self.pbest = self.position[:]
+        self.pbest_value = objective_function(self.position)
 
-        self.position = initial_position[:]  # Membuat salinan independen dari posisi awal dan disetor ke position
-        self.velocity = [0.0] * dimensi  # Inisialisasi v awal ketika partikel dibuat
-        self.pbest = self.position[:]  # Membuat salinan independen dari position
-        self.pbest_value = objective_function(self.position)  # pbest_value adalah hasil dari obj func(posiiton)
-
-def update_velocity(particle, gbest, w=1, c1=0.5, c2=1):
+def update_velocity(particle, gbest, w=0.9, c1=0.5, c2=1):
     # Fungsi untuk mengupdate kecepatan partikel.
 
     for i in range(len(particle.velocity)):
@@ -31,12 +29,13 @@ def update_position(particle):
     # Fungsi untuk mengupdate posisi partikel.
 
     for i in range(len(particle.position)):
-        # Update posisi partikel dengan batas [-5.2, 5.2] untuk setiap dimensi
         new_position = particle.position[i] + particle.velocity[i]
-        particle.position[i] = max(-5.2, min(5.2, new_position))
+        # Pastikan nilai posisi berada dalam rentang [-10, 10]
+        particle.position[i] = max(-10, min(10, new_position))
+
 def generate_random_positions(dimensi, jumlah_posisi):
-    # Fungsi untuk menghasilkan bilangan acak dalam rentang [-5, 5]
-    return [[random.uniform(-5.2, 5.2) for _ in range(dimensi)] for _ in range(jumlah_posisi)]
+    # Fungsi untuk menghasilkan bilangan acak dalam rentang [-10, 10]
+    return [[random.uniform(-10, 10) for _ in range(dimensi)] for _ in range(jumlah_posisi)]
 
 def pso(dimensi, jumlah_partikel, jumlah_iterasi, initial_particles=None):
     # Algoritma Particle Swarm Optimization (PSO).
@@ -51,11 +50,10 @@ def pso(dimensi, jumlah_partikel, jumlah_iterasi, initial_particles=None):
     dari atribut pbest_value terkecil dari tiap-tiap partikel
     lalu salin pbest[:]-nya tersebut menjadi nilai gbest"""
 
-    for iteration in range(0, jumlah_iterasi):  # Melakukan iterasi
+    table = PrettyTable()
+    table.field_names = ["Iterasi", "Posisi (x,y)", "f(x,y)", "gBest", "pBest", "v"]
 
-        # Pencetakan nilai pada setiap iterasi
-        print(f"Iterasi {iteration+1}:\nx={[particle.position for particle in particles]}\n"
-              f"f(x)={[objective_function(particle.position) for particle in particles]}")
+    for iteration in range(0, jumlah_iterasi):  # Melakukan iterasi
 
         for particle in particles:  # Tiap partikel juga akan di cek nilainya terkait fungsi objektif
             current_fitness = objective_function(particle.position)
@@ -73,34 +71,39 @@ def pso(dimensi, jumlah_partikel, jumlah_iterasi, initial_particles=None):
             if current_fitness < objective_function(gbest):
                 gbest = particle.position[:]
 
-        print(f"pbest={[particle.pbest for particle in particles]}")
-        print(f"gbest={gbest}")
-
-        for particle in particles:  # Tiap partikel diupdate kecepatan dan posisinya pada tiap iterasi
+        for particle in particles:
             update_velocity(particle, gbest)
-            update_position(particle)
 
-        print(f"v = {[particle.velocity for particle in particles]}\n")
+        rounded_gbest = [round(value, 4) for value in gbest]
+
+        row = [iteration + 1,
+               [(round(pos[0], 3), round(pos[1], 3)) for pos in [particle.position for particle in particles]],
+               [round(objective_function(particle.position), 4) for particle in particles],
+               (round(gbest[0], 3), round(gbest[1], 3)),
+               [(round(pbest[0], 3), round(pbest[1], 3)) for pbest in [particle.pbest for particle in particles]],
+               [round(velocity, 3) for velocity in [particle.velocity[0] for particle in particles]]
+               ]
+
+        table.add_row(row)
+
+        for particle in particles:
+            update_position(particle)
 
     """Jadi akhir dari fungsi ini akan memberikan kita
     gbest(posisi) dan juga nilainya jika dimasukkan kedalam 
     objective function"""
-    return gbest, objective_function(gbest)
+    print(table)
+    return rounded_gbest, round(objective_function(gbest), 4)
 
 if __name__ == "__main__":
-    dimensi = 1  # Inisialiasi dimensi partikel
-    jumlah_partikel = 3  # Banyaknya partikel
-    jumlah_iterasi = 5  # Jumlah Iterasi
+    dimensi = 2
+    jumlah_partikel = 3
+    jumlah_iterasi = 100
     r1 = random.uniform(0,1)
-    r2 = random.uniform(0,1)
+    r2 = random.uniform(0, 1)
 
-    initial_positions = generate_random_positions(dimensi, 3)  # Generate 3 posisi partikel acak
+    initial_positions = generate_random_positions(dimensi, 3)  # Generate 3 posisi acak dalam dimensi 2
     particles = [Particle(dimensi, initial_position) for initial_position in initial_positions]
-    # Membuat list particles berisi objek-objek Particle yang dihasilkan dari inisialisasi dengan posisi awal yang ada dalam initial_positions
 
     hasil, nilai_optimum = pso(dimensi, jumlah_partikel, jumlah_iterasi, initial_particles=particles)
-    print(f"Hasil optimasi: gBest={hasil}, f(x)={nilai_optimum}")
-    """Membuat 2 variable (hasil dan nilai optimum) yang nilainya didapat
-    dari fungsi pso yang mengembalikan gbest dan nilai dari gbest
-    jika dimasukkan kedalam objective functionnya
-    Kemudian akan dicetak sebagai gbest dan juga nilai optimum"""
+    print(f"Hasil optimasi: (x, y)={hasil}, f(x, y)={nilai_optimum}")
